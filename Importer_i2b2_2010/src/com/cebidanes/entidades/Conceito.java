@@ -19,6 +19,15 @@ public class Conceito extends DominioBase {
 	@ManyToMany
 	List<Relacao> relacoes;
 
+	public Conceito(){}
+	
+	public Conceito(Tipo tipo, Assertion aseAssertion, String valor){
+		this.tipo = tipo;
+		this.assertion = aseAssertion;
+		this.valor = valor;
+	}
+	
+	
 	public Tipo getTipo() {
 		return tipo;
 	}

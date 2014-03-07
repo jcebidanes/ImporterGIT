@@ -8,16 +8,23 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.cebidanes.base.Elemento;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+
+import com.cebidanes.entidades.Assertion;
+import com.cebidanes.entidades.Conceito;
+import com.cebidanes.entidades.Tipo;
 
 public class CarregaAst {
 	
-	ArrayList<Elemento> elementos = new ArrayList<Elemento>();
-	
-	
+	EntityManager em;
 	ArrayList<String> conceitos = new ArrayList<String>();
 	ArrayList<String> tipos = new ArrayList<String>();
 	ArrayList<String> assertions = new ArrayList<String>();
+
+	public CarregaAst(EntityManager em) {
+		this.em = em;
+	}
 	
 	public void carregaArquivoAst(String path) {
 		
@@ -31,8 +38,25 @@ public class CarregaAst {
 				String tipo = arquivo.next();
 				String assertion = arquivo.next();
 				
-				Elemento e = new Elemento(pegaValores(conceito), pegaValores(tipo), pegaValores(assertion));
-				elementos.add(e);
+				String valorTipo = pegaValores(tipo);
+				String valorAssertion = pegaValores(assertion);
+				
+				try{
+					Tipo tipoCadastrado = em.createQuery("Select t From Tipo t where t.valor=:tipo ", Tipo.class)
+							.setParameter("tipo", valorTipo)
+							.getSingleResult();
+					
+					Assertion assertionCadastrado = em.createQuery("Select a From Assertion a Where a.valor=:assertion ", Assertion.class)
+							.setParameter("assertion", valorAssertion)
+							.getSingleResult();
+					
+					em.persist(new Conceito(tipoCadastrado, assertionCadastrado, pegaValores(conceito)));
+				
+				}catch(NoResultException e){
+					System.out.println(arquivo.nextLine());
+					e.printStackTrace();
+				}
+				
 			}
 			scanner.close();
 			fr.close();
