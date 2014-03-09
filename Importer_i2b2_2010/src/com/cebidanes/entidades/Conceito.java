@@ -1,10 +1,7 @@
 
 package com.cebidanes.entidades;
 
-import java.util.List;
-
 import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 @Entity
@@ -15,9 +12,6 @@ public class Conceito extends DominioBase {
 	
 	@ManyToOne
 	Assertion assertion;
-	
-	@ManyToMany
-	List<Relacao> relacoes;
 
 	public Conceito(){}
 	
@@ -42,14 +36,6 @@ public class Conceito extends DominioBase {
 
 	public void setAssertion(Assertion assertion) {
 		this.assertion = assertion;
-	}
-
-	public List<Relacao> getRelacoes() {
-		return relacoes;
-	}
-
-	public void setRelacoes(List<Relacao> relacoes) {
-		this.relacoes = relacoes;
 	}
 	
 }

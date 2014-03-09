@@ -7,6 +7,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import com.cebidanes.carregador.CarregaAst;
+import com.cebidanes.carregador.CarregaCon;
 import com.cebidanes.entidades.Assertion;
 import com.cebidanes.entidades.Relacao;
 import com.cebidanes.entidades.Tipo;
@@ -64,13 +65,20 @@ public class Main {
 					em.persist(r);
 			}
 			
-			
 			CarregaAst ast  =  new CarregaAst(em);
-			File[] arquivosAst = carregaArquivos("../Importer_i2b2_2010/arquivos/ast");
+			File[] arquivosAst = carregaArquivos("D:/jcebidanes/git/ImporterGIT/Importer_i2b2_2010/arquivos/ast");
 			
 			for(File f: arquivosAst){
 				System.out.println(f.getPath());
 				ast.carregaArquivoAst(f.getPath());
+			}
+			
+			CarregaCon con  =  new CarregaCon(em);
+			File[] arquivosCon = carregaArquivos("D:/jcebidanes/git/ImporterGIT/Importer_i2b2_2010/arquivos/concepts");
+			
+			for(File f: arquivosCon){
+				System.out.println(f.getPath());
+				con.carregaArquivoCon(f.getPath());
 			}
 			
 			em.getTransaction().commit();
