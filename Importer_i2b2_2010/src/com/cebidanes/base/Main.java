@@ -36,7 +36,7 @@ public class Main {
 			}
 			
 			
-
+//
 //			Tipo[] tipoList = {new Tipo("problem"), new Tipo("treatment"), new Tipo("test")};
 //			for(Tipo t: tipoList){
 //				Long tipoCadastrado = em.createQuery("Select count(t) From Tipo t where t.valor=:tipo ", Long.class)
@@ -67,10 +67,10 @@ public class Main {
 //					 				 new Relacao("TrWP"),
 //					 				 new Relacao("TrCP"),
 //					 				 new Relacao("TrAP"),
-//					 				 new Relacao("TrNAP "),
+//					 				 new Relacao("TrNAP"),
 //					 				 new Relacao("PIP"),
 //  									 new Relacao("TeRP"),
-// 									 new Relacao("TeCP ")};
+// 									 new Relacao("TeCP")};
 //			
 //			for(Relacao r: relacaoList){
 //				Long relacaoCadastrada = em.createQuery("Select count(r) From Relacao r Where r.valor=:relacao ", Long.class)

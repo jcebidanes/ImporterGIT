@@ -17,6 +17,7 @@ import com.cebidanes.entidades.Tipo;
 
 public class CarregaCon {
 	
+	Integer i = 0;
 	EntityManager em;
 	ArrayList<String> conceitos = new ArrayList<String>();
 	ArrayList<String> tipos = new ArrayList<String>();
@@ -39,8 +40,6 @@ public class CarregaCon {
 				String valorConceito = pegaValores(conceito);
 				String valorTipo = pegaValores(tipo);
 				
-				System.out.println(valorConceito+" - "+valorTipo);
-				
 				cadastraConceitoAndTipo(new Conceito(valorConceito), new Tipo(valorTipo));
 			}
 			scanner.close();
@@ -56,6 +55,11 @@ public class CarregaCon {
 
 	public ConceitoTipoAssertion cadastraConceitoAndTipo(Conceito conceitoCadastrado, Tipo tipoCadastrado) {
 		
+		if(i++ % 20 == 0){
+			em.flush();
+			em.clear();
+		}
+		
 		Conceito conceitoBusca = null;
 		ConceitoTipoAssertion cta = null;
 		
@@ -66,7 +70,7 @@ public class CarregaCon {
 		if(conceitoBusca == null){
 			
 			em.persist(conceitoCadastrado);
-			//em.flush();
+			
 			
 			if(tipoCadastrado.getId() == null)
 				tipoCadastrado = buscaTipo(tipoCadastrado);
@@ -74,33 +78,34 @@ public class CarregaCon {
 			cta = new ConceitoTipoAssertion(conceitoCadastrado, tipoCadastrado, null);
 			
 			em.persist(cta);
-			//em.flush();
+			
 			
 			return cta; 
 			
 		}else{
 			
-			ConceitoTipoAssertion conceitoTipoAssertionCadastrado = em.createQuery(
-					 " Select cta From ConceitoTipoAssertion cta " +
-					 " left join cta.conceito c" +
-					 " left join cta.tipo t" +
-					 " where c=:conceito and t.valor=:tipo", ConceitoTipoAssertion.class)
-					.setParameter("conceito", conceitoCadastrado)
-					.setParameter("tipo", tipoCadastrado.getValor())
-					.getSingleResult();
+			ConceitoTipoAssertion conceitoTipoAssertionCadastrado = null;
 			
-			if(conceitoTipoAssertionCadastrado == null){
+			try{
+				conceitoTipoAssertionCadastrado = em.createQuery(
+						 " Select cta From ConceitoTipoAssertion cta " +
+						 " left join cta.conceito c" +
+						 " left join cta.tipo t" +
+						 " where c.valor=:conceito and t.valor=:tipo", ConceitoTipoAssertion.class)
+						.setParameter("conceito", conceitoCadastrado.getValor())
+						.setParameter("tipo", tipoCadastrado.getValor())
+						.getSingleResult();
 				
+			}catch(NoResultException e){
+					
 				if(tipoCadastrado.getId() == null)
 					tipoCadastrado = buscaTipo(tipoCadastrado);
 				
-				cta = new ConceitoTipoAssertion(conceitoCadastrado, tipoCadastrado, null);
+				cta = new ConceitoTipoAssertion(conceitoBusca, tipoCadastrado, null);
 				em.persist(cta);
-				//em.flush();
 				
 				return cta;
 			}
-			
 			return conceitoTipoAssertionCadastrado;
 		}
 	}
