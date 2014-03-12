@@ -17,6 +17,7 @@ import com.cebidanes.entidades.Relacao;
 
 public class CarregaRel {
 	
+	Integer i = 0;
 	EntityManager em;
 	ArrayList<String> conceitos = new ArrayList<String>();
 	ArrayList<String> tipos = new ArrayList<String>();
@@ -63,6 +64,11 @@ public class CarregaRel {
 					Conceito conceitoBCadastrado = buscaConceito(valorConceitoB);
 					
 					em.persist(new ConceitoRelacao(conceitoACadastrado, relacaoCadastrada, conceitoBCadastrado));
+					
+					if(i++ % 20 == 0){
+						em.flush();
+						em.clear();
+					}
 				}
 				
 			}
