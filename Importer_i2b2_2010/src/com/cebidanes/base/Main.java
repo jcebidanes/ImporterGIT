@@ -19,7 +19,7 @@ public class Main {
 		
 		File localBase;
 		File diretorioCasa = new File("D:/jcebidanes/git/ImporterGIT");
-		File diretorioECO = new File("C:/jcebidanes/git/ImporterGIT");
+		File diretorioECO = new File("C:/Users/jhonnatan.santos/git/ImporterGIT");
 		
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mestradoPU");
 		EntityManager em = emf.createEntityManager();
