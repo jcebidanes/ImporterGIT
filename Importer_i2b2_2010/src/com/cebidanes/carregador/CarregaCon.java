@@ -12,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
 import com.cebidanes.entidades.Conceito;
+import com.cebidanes.entidades.ConceitoTipoAssertion;
 import com.cebidanes.entidades.Tipo;
 
 public class CarregaCon {
@@ -24,7 +25,7 @@ public class CarregaCon {
 		this.em = em;
 	}
 	
-	public void carregaArquivoCon(String path) {
+	public void carregaArquivoCon(String path) throws NoResultException {
 		
 		try {
 			FileReader fr = new FileReader(path);
@@ -38,29 +39,9 @@ public class CarregaCon {
 				String valorConceito = pegaValores(conceito);
 				String valorTipo = pegaValores(tipo);
 				
-				try{
-					Long conceitoCadastrado = em.createQuery(
-							 " Select count(c) From Conceito c " +
-							 " left join c.tipo t " +
-							 " where c.valor=:conceito and t.valor=:tipo ", Long.class)
-							.setParameter("conceito", valorConceito)
-							.setParameter("tipo", valorTipo)
-							.getSingleResult();
-					
-					if(conceitoCadastrado < 1){
-					
-						Tipo tipoCadastrado = em.createQuery("Select t From Tipo t where t.valor=:tipo ", Tipo.class)
-								.setParameter("tipo", valorTipo)
-								.getSingleResult();
-						
-						em.persist(new Conceito(tipoCadastrado, null, valorConceito));
-					}
-					
-				}catch(NoResultException e){
-					System.out.println(arquivo.nextLine());
-					e.printStackTrace();
-				}
+				System.out.println(valorConceito+" - "+valorTipo);
 				
+				cadastraConceitoAndTipo(new Conceito(valorConceito), new Tipo(valorTipo));
 			}
 			scanner.close();
 			fr.close();
@@ -71,6 +52,80 @@ public class CarregaCon {
 			e.printStackTrace();
 		}
 	
+	}
+
+	public ConceitoTipoAssertion cadastraConceitoAndTipo(Conceito conceitoCadastrado, Tipo tipoCadastrado) {
+		
+		Conceito conceitoBusca = null;
+		ConceitoTipoAssertion cta = null;
+		
+		if(conceitoCadastrado.getId() == null){
+			conceitoBusca = buscaConceito(conceitoCadastrado);
+		}
+		
+		if(conceitoBusca == null){
+			
+			em.persist(conceitoCadastrado);
+			//em.flush();
+			
+			if(tipoCadastrado.getId() == null)
+				tipoCadastrado = buscaTipo(tipoCadastrado);
+			
+			cta = new ConceitoTipoAssertion(conceitoCadastrado, tipoCadastrado, null);
+			
+			em.persist(cta);
+			//em.flush();
+			
+			return cta; 
+			
+		}else{
+			
+			ConceitoTipoAssertion conceitoTipoAssertionCadastrado = em.createQuery(
+					 " Select cta From ConceitoTipoAssertion cta " +
+					 " left join cta.conceito c" +
+					 " left join cta.tipo t" +
+					 " where c=:conceito and t.valor=:tipo", ConceitoTipoAssertion.class)
+					.setParameter("conceito", conceitoCadastrado)
+					.setParameter("tipo", tipoCadastrado.getValor())
+					.getSingleResult();
+			
+			if(conceitoTipoAssertionCadastrado == null){
+				
+				if(tipoCadastrado.getId() == null)
+					tipoCadastrado = buscaTipo(tipoCadastrado);
+				
+				cta = new ConceitoTipoAssertion(conceitoCadastrado, tipoCadastrado, null);
+				em.persist(cta);
+				//em.flush();
+				
+				return cta;
+			}
+			
+			return conceitoTipoAssertionCadastrado;
+		}
+	}
+
+	private Tipo buscaTipo(Tipo tipo) {
+		try{
+			Tipo tipoCadastrado = em.createQuery("Select t From Tipo t where t.valor=:tipo ", Tipo.class)
+					.setParameter("tipo", tipo.getValor())
+					.getSingleResult();
+			return tipoCadastrado;
+		}catch(NoResultException e){
+			return null;
+		}
+	}
+
+	private Conceito buscaConceito(Conceito conceito) {
+		try{
+			Conceito conceitoCadastrado = em.createQuery(
+					 " Select c From Conceito c where c.valor=:conceito ", Conceito.class)
+					.setParameter("conceito", conceito.getValor())
+					.getSingleResult();
+			return conceitoCadastrado;
+		}catch(NoResultException e){
+			return null;
+		}
 	}
 	
 	public String pegaValores(String valor){

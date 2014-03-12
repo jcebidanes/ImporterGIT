@@ -13,6 +13,7 @@ import javax.persistence.NoResultException;
 
 import com.cebidanes.entidades.Assertion;
 import com.cebidanes.entidades.Conceito;
+import com.cebidanes.entidades.ConceitoTipoAssertion;
 import com.cebidanes.entidades.Tipo;
 
 public class CarregaAst {
@@ -26,7 +27,7 @@ public class CarregaAst {
 		this.em = em;
 	}
 	
-	public void carregaArquivoAst(String path) {
+	public void carregaArquivoAst(String path) throws NoResultException {
 		
 		try {
 			FileReader fr = new FileReader(path);
@@ -38,23 +39,47 @@ public class CarregaAst {
 				String tipo = arquivo.next();
 				String assertion = arquivo.next();
 				
+				String valorConceito = pegaValores(conceito);
 				String valorTipo = pegaValores(tipo);
 				String valorAssertion = pegaValores(assertion);
 				
-				try{
-					Tipo tipoCadastrado = em.createQuery("Select t From Tipo t where t.valor=:tipo ", Tipo.class)
-							.setParameter("tipo", valorTipo)
-							.getSingleResult();
+				ConceitoTipoAssertion conceitoTipoAssertionCadastrado = null;
+				
+				conceitoTipoAssertionCadastrado = em.createQuery(
+						 " Select cta From ConceitoTipoAssertion cta " +
+						 " left join cta.conceito c" +
+						 " left join cta.tipo t" +
+						 " left join cta.assertion a" +
+						 " where c.valor=:conceito and t.valor=:tipo ", ConceitoTipoAssertion.class)
+						.setParameter("conceito", valorConceito)
+						.setParameter("tipo", valorTipo)
+						.getSingleResult();
+				
+				if(conceitoTipoAssertionCadastrado != null){
 					
+					if(conceitoTipoAssertionCadastrado.getAssertion() == null){
+					
+						Assertion assertionCadastrado = em.createQuery("Select a From Assertion a Where a.valor=:assertion ", Assertion.class)
+							.setParameter("assertion", valorAssertion)
+							.getSingleResult();
+						
+						conceitoTipoAssertionCadastrado.setAssertion(assertionCadastrado);
+					
+						em.persist(conceitoTipoAssertionCadastrado);
+					}
+				}else{
+					
+					CarregaCon con = new CarregaCon(em);
+					conceitoTipoAssertionCadastrado = con.cadastraConceitoAndTipo(new Conceito(valorConceito), new Tipo(valorTipo));
+						
 					Assertion assertionCadastrado = em.createQuery("Select a From Assertion a Where a.valor=:assertion ", Assertion.class)
 							.setParameter("assertion", valorAssertion)
 							.getSingleResult();
 					
-					em.persist(new Conceito(tipoCadastrado, assertionCadastrado, pegaValores(conceito)));
-				
-				}catch(NoResultException e){
-					System.out.println(arquivo.nextLine());
-					e.printStackTrace();
+					conceitoTipoAssertionCadastrado.setAssertion(assertionCadastrado);
+					
+					em.persist(conceitoTipoAssertionCadastrado);
+					
 				}
 				
 			}
